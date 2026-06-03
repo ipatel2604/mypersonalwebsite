@@ -1,0 +1,149 @@
+{
+  "company_name": "Assam Tea Company",
+  "announcement": "Strong Flavor in Every Cup | Freshly Packed for Lasting Aroma | Assam Quality You Can Trust",
+  "navigation": [
+    "Home",
+    "Products",
+    "About Us",
+    "Checkout"
+  ],
+  "hero": {
+    "headline": "Make Every Tea Break Richer with Strong, Fresh Assam Tea",
+    "supporting_line": "Assam Quality. Strong Flavor. Fresh Packing.",
+    "button_label": "Explore Now",
+    "image_path": "assets/hero-background.jpg"
+  },
+  "testimonials": [
+    {
+      "quote": "A bold, refreshing cup with an aroma that makes our morning tea special.",
+      "author": "Sample Customer",
+      "location": "Local Customer"
+    },
+    {
+      "quote": "The loose tea brews beautifully and tastes fresh every time.",
+      "author": "Sample Customer",
+      "location": "Local Customer"
+    },
+    {
+      "quote": "Strong flavor and excellent freshness. It has become our daily tea.",
+      "author": "Sample Customer",
+      "location": "Local Customer"
+    }
+  ],
+  "benefits": [
+    {
+      "title": "Freshly Packed",
+      "description": "Carefully packed to keep the aroma and freshness ready for your cup."
+    },
+    {
+      "title": "Strong Rich Flavor",
+      "description": "Bold black loose tea crafted for a satisfying everyday brew."
+    },
+    {
+      "title": "Authentic Assam Quality",
+      "description": "A tea experience inspired by the rich character of Assam."
+    }
+  ],
+  "featured_product": {
+    "name": "Black Loose Tea Packets",
+    "description": "Fresh, robust Assam tea for families who enjoy a rich and flavorful cup.",
+    "sizes_note": "Packet sizes and prices will be added on the Products page."
+  },
+  "products_page": {
+    "headline": "Our Products",
+    "intro": "Black loose tea, flavored tea, tea masala, sugar, and bulk options from Assam Tea Company.",
+    "loose_tea_heading": "Black Loose Tea",
+    "loose_tea_intro": "Choose a tea category, then select the packet size that fits your need.",
+    "size_labels": [
+      "100 g",
+      "250 g",
+      "500 g",
+      "1 kg"
+    ],
+    "tea_categories": [
+      {
+        "name": "Regular",
+        "description": "A strong everyday tea for daily family use.",
+        "prices": {
+          "100 g": "₹20",
+          "250 g": "₹60",
+          "500 g": "₹120",
+          "1 kg": "₹240"
+        }
+      },
+      {
+        "name": "Regular Plus",
+        "description": "A fuller everyday option with a little more body in the cup.",
+        "prices": {
+          "100 g": "₹25",
+          "250 g": "₹65",
+          "500 g": "₹130",
+          "1 kg": "₹260"
+        }
+      },
+      {
+        "name": "Premium",
+        "description": "A richer tea choice for customers who enjoy stronger aroma and taste.",
+        "prices": {
+          "100 g": "₹30",
+          "250 g": "₹70",
+          "500 g": "₹140",
+          "1 kg": "₹280"
+        }
+      },
+      {
+        "name": "Premium Plus",
+        "description": "A stronger premium cup with deeper color and flavor.",
+        "prices": {
+          "100 g": "₹35",
+          "250 g": "₹75",
+          "500 g": "₹150",
+          "1 kg": "₹300"
+        }
+      },
+      {
+        "name": "Super Premium",
+        "description": "Our highest-quality black loose tea for a bold, memorable cup.",
+        "prices": {
+          "100 g": "₹40",
+          "250 g": "₹80",
+          "500 g": "₹230",
+          "1 kg": "₹360"
+        }
+      }
+    ],
+    "special_products": [
+      {
+        "name": "Masala Tea Mix",
+        "price": "₹10",
+        "description": "A flavorful tea masala packet for adding spice and warmth to your tea."
+      },
+      {
+        "name": "Chocolate Tea",
+        "price": "₹22",
+        "description": "A sweet flavored tea option for customers who enjoy a chocolate-style tea taste."
+      }
+    ],
+    "sugar_products": [
+      {
+        "name": "Sugar",
+        "price": "Price coming soon",
+        "description": "Sugar options will be added once the final prices are confirmed."
+      }
+    ],
+    "bulk_products": [
+      {
+        "name": "Whole Bag of Tea",
+        "price": "Contact for bulk price",
+        "description": "Bulk tea bags for regular customers, shops, offices, and larger needs."
+      },
+      {
+        "name": "Whole Bag of Sugar",
+        "price": "Contact for bulk price",
+        "description": "Bulk sugar bags with pricing and availability to be confirmed."
+      }
+    ],
+    "order_note": "For ordering, availability, or bulk pricing, add a product to your bag and continue to checkout."
+  },
+  "footer_text": "Fresh Assam tea for every tea break."
+}
