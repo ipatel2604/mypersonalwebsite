@@ -8,6 +8,17 @@ import streamlit as st
 
 BASE_DIR = Path(__file__).parent
 DATA_PATH = BASE_DIR / "data" / "business.json"
+LOGO_IMAGE_PATH = "assets/651fa53d-7fd1-4663-8600-aba5389a5bca.png"
+PRODUCT_250G_SIZE_LABEL = "250 g"
+PRODUCT_500G_SIZE_LABEL = "500 g"
+PRODUCT_1KG_SIZE_LABEL = "1 kg"
+LOOSE_TEA_IMAGE_PATHS = {
+    PRODUCT_250G_SIZE_LABEL: "assets/6cc32f61-1971-49cd-9962-55ca04232192.png",
+    PRODUCT_500G_SIZE_LABEL: "assets/cd822b57-ac2f-40b7-ad87-d434f32afe0b.png",
+    PRODUCT_1KG_SIZE_LABEL: "assets/4e101546-ebb5-4381-8d29-f7a360030067.png",
+}
+LAMSA_TEA_IMAGE_PATH = "assets/bdc8f3c0-9962-4796-8b6a-ffc29437e487.png"
+MASALA_TEA_IMAGE_PATH = "assets/094c11e2-a39c-4b8e-949b-e66d416e0534.png"
 
 
 def load_business_data() -> dict:
@@ -33,6 +44,44 @@ def local_background_css(image_path: str) -> str:
     )
 
 
+def local_image_src(image_path: str) -> str:
+    path = BASE_DIR / image_path
+    if not path.exists():
+        return ""
+
+    mime_by_suffix = {
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".webp": "image/webp",
+    }
+    mime = mime_by_suffix.get(path.suffix.lower(), "image/png")
+    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+    return f"data:{mime};base64,{encoded}"
+
+
+def product_pack_html(
+    name: str,
+    image_class: str,
+    pack_class: str,
+    size_label: str,
+    prefer_image: bool = True,
+) -> str:
+    image_src = local_image_src(LOOSE_TEA_IMAGE_PATHS.get(size_label, ""))
+    if prefer_image and image_src:
+        return (
+            f'<img class="{image_class}" src="{image_src}" '
+            f'alt="{safe(name)} {safe(size_label)} tea packet">'
+        )
+
+    return (
+        f'<div class="{pack_class}">'
+        "<small>Assam Tea Company</small>"
+        f"<strong>{safe(name)}<br>Black Tea</strong>"
+        "</div>"
+    )
+
+
 def safe(text: str) -> str:
     return html.escape(text)
 
@@ -46,6 +95,12 @@ def query_value(name: str, default: str = "") -> str:
     if isinstance(value, list):
         return value[0] if value else default
     return value
+
+
+def add_item_to_bag(item: dict) -> None:
+    if "bag_items" not in st.session_state:
+        st.session_state.bag_items = []
+    st.session_state.bag_items.append(item)
 
 
 data = load_business_data()
@@ -62,6 +117,9 @@ current_page = st.session_state.current_page
 if current_page not in PAGE_SLUGS.values():
     current_page = "home"
     st.session_state.current_page = "home"
+if query_value("product"):
+    current_page = "products"
+    st.session_state.current_page = "products"
 page_titles = {
     "home": "Home",
     "products": "Products",
@@ -122,10 +180,18 @@ st.markdown(
     }}
     .brand {{ display: flex; align-items: center; gap: .82rem; }}
     .logo {{
+        width: 82px; height: 82px;
+        border-radius: 0;
+        display: block;
+        object-fit: contain;
+        background: transparent;
+    }}
+    .logo-fallback {{
         width: 49px; height: 49px;
         border-radius: 50%;
         display: grid; place-items: center;
-        color: #FAF5EA; background: #214D36;
+        color: #FAF5EA;
+        background: #214D36;
         font-family: 'Cormorant Garamond', Georgia, serif;
         font-size: 1.45rem; font-weight: 700;
     }}
@@ -135,10 +201,10 @@ st.markdown(
         color: #173A28;
     }}
     .brand-strip {{
-        padding: 1.2rem 0 1rem clamp(1.3rem, 6vw, 5.5rem);
+        padding: .75rem 0 .7rem clamp(1.3rem, 6vw, 5.5rem);
         background: rgba(250, 245, 234, .97);
         border-bottom: 1px solid #E8DDBF;
-        min-height: 78px;
+        min-height: 100px;
     }}
     .brand-strip .brand-name {{
         font-size: clamp(1.55rem, 2.2vw, 2rem);
@@ -312,11 +378,12 @@ st.markdown(
         box-shadow: 0 18px 38px rgba(33,77,54,.12);
     }}
     .shop-image {{
-        min-height: 360px;
+        min-height: 420px;
         display: grid;
         place-items: center;
-        background: #FFFFFF;
+        background: transparent;
         position: relative;
+        overflow: hidden;
     }}
     .stock-tag {{
         position: absolute;
@@ -351,6 +418,12 @@ st.markdown(
         font-family: 'Cormorant Garamond', Georgia, serif;
         font-size: clamp(2rem, 4vw, 3rem);
         line-height: .95;
+    }}
+    .shop-product-image {{
+        width: min(560px, 98%);
+        max-height: 410px;
+        object-fit: contain;
+        display: block;
     }}
     .shop-info {{
         text-align: center;
@@ -417,14 +490,13 @@ st.markdown(
         box-shadow: 0 18px 42px rgba(33,77,54,.09);
     }}
     .product-visual {{
-        min-height: 430px;
-        border-radius: 22px;
-        background:
-            radial-gradient(circle at 48% 32%, rgba(255,255,255,.7), transparent 28%),
-            linear-gradient(145deg, #F7EDD7 0%, #D7BC79 52%, #214D36 100%);
+        min-height: 610px;
+        border-radius: 0;
+        background: transparent;
         display: grid;
-        place-items: center;
-        overflow: hidden;
+        align-items: center;
+        justify-items: start;
+        overflow: visible;
     }}
     .mock-pack {{
         width: min(330px, 74%);
@@ -455,6 +527,12 @@ st.markdown(
         margin-top: 1rem;
         letter-spacing: .12em;
         font-size: .82rem;
+    }}
+    .detail-product-image {{
+        width: min(720px, 100%);
+        max-height: 600px;
+        object-fit: contain;
+        display: block;
     }}
     .product-info .brand-line {{
         color: #E06625;
@@ -723,6 +801,19 @@ st.markdown(
         gap: .75rem 1rem;
         align-items: start;
     }}
+    .simple-product-image-wrap {{
+        grid-column: 1 / -1;
+        min-height: 260px;
+        display: grid;
+        place-items: center;
+        margin: -.25rem -.25rem .7rem;
+    }}
+    .simple-product-image {{
+        width: min(320px, 92%);
+        max-height: 260px;
+        object-fit: contain;
+        display: block;
+    }}
     .simple-card h3 {{
         margin: 0;
         color: #173A28;
@@ -802,13 +893,19 @@ announcement = safe(data["announcement"])
 
 
 def render_header(active_page: str) -> None:
+    logo_src = local_image_src(LOGO_IMAGE_PATH)
+    logo_html = (
+        f'<img class="logo" src="{logo_src}" alt="{safe(data["company_name"])} logo">'
+        if logo_src
+        else '<div class="logo-fallback">AT</div>'
+    )
     brand_col, _, nav_col = st.columns([1.2, 0.8, 1.4], vertical_alignment="center")
     with brand_col:
         st.markdown(
             f"""
             <div class="brand-strip">
                 <div class="brand">
-                    <div class="logo">AT</div>
+                    {logo_html}
                     <div class="brand-name">{safe(data["company_name"])}</div>
                 </div>
             </div>
@@ -824,11 +921,13 @@ def render_header(active_page: str) -> None:
             data["navigation"],
             default=active_label,
             label_visibility="collapsed",
-            key="nav_pills",
+            key=f"nav_pills_{active_page}",
             width="stretch",
         )
     chosen_page = PAGE_SLUGS[chosen]
     if chosen_page != st.session_state.current_page:
+        if query_value("product"):
+            st.query_params.clear()
         st.session_state.current_page = chosen_page
         st.rerun()
 
@@ -956,8 +1055,16 @@ def render_products() -> None:
         slugify(category["name"]): category
         for category in products_page["tea_categories"]
     }
+    requested_product_slug = query_value("product")
     if "selected_product_slug" not in st.session_state:
-        st.session_state.selected_product_slug = query_value("product")
+        st.session_state.selected_product_slug = ""
+    if (
+        requested_product_slug in tea_by_slug
+        and requested_product_slug != st.session_state.selected_product_slug
+    ):
+        st.session_state.selected_product_slug = requested_product_slug
+        st.session_state.selected_size = products_page["size_labels"][0]
+        st.session_state.selected_qty = 1
     if st.session_state.selected_product_slug not in tea_by_slug:
         st.session_state.selected_product_slug = ""
     if "selected_size" not in st.session_state:
@@ -986,6 +1093,12 @@ def render_products() -> None:
     if st.session_state.selected_product_slug:
         category = tea_by_slug[st.session_state.selected_product_slug]
         detail_name = safe(category["name"])
+        detail_pack = product_pack_html(
+            category["name"],
+            "detail-product-image",
+            "mock-pack",
+            st.session_state.selected_size,
+        )
         st.markdown(
             f"""
             <section class="section cream" style="padding-bottom:1.5rem;">
@@ -994,6 +1107,7 @@ def render_products() -> None:
         )
         if st.button("← Back to all products", key="back_to_products"):
             st.session_state.selected_product_slug = ""
+            st.query_params.clear()
             st.rerun()
 
         image_col, info_col = st.columns([1.15, 1], gap="large")
@@ -1001,11 +1115,7 @@ def render_products() -> None:
             st.markdown(
                 f"""
                 <div class="product-visual">
-                    <div class="mock-pack">
-                        <small>Assam Tea Company</small>
-                        <strong>{detail_name}<br>Black Tea</strong>
-                        <span>LOOSE TEA PACKETS</span>
-                    </div>
+                    {detail_pack}
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -1050,19 +1160,28 @@ def render_products() -> None:
                 unsafe_allow_html=True,
             )
             if st.button("Add to bag", key="add_to_bag", use_container_width=True):
-                st.session_state.bag_item = {
+                add_item_to_bag({
                     "product": category["name"],
                     "size": size,
                     "price": category["prices"][size],
                     "quantity": st.session_state.selected_qty,
-                }
+                })
                 st.session_state.current_page = "checkout"
-                st.session_state.nav_pills = "Checkout"
                 st.rerun()
 
         st.markdown("</section>", unsafe_allow_html=True)
         render_footer()
         return
+
+    def add_direct_product_to_bag(product: dict, quantity: int = 1) -> None:
+        add_item_to_bag({
+            "product": product["name"],
+            "size": product.get("size", "Standard packet"),
+            "price": product["price"],
+            "quantity": quantity,
+        })
+        st.session_state.current_page = "checkout"
+        st.rerun()
 
     st.markdown(
         f"""
@@ -1072,7 +1191,7 @@ def render_products() -> None:
                 <h2>{safe(products_page["loose_tea_heading"])}</h2>
                 <p>{safe(products_page["loose_tea_intro"])}</p>
             </div>
-            <div class="product-select-note">Select a product to choose packet size and quantity.</div>
+            <div class="product-select-note">Click a product to choose packet size and quantity.</div>
         </section>
         """,
         unsafe_allow_html=True,
@@ -1085,67 +1204,31 @@ def render_products() -> None:
         columns = st.columns(2)
         for column, category in zip(columns, row):
             category_slug = slugify(category["name"])
+            shop_pack = product_pack_html(
+                category["name"],
+                "shop-product-image",
+                "shop-pack",
+                products_page["size_labels"][0],
+            )
             with column:
                 st.markdown(
                     f"""
-                    <div class="shop-card">
+                    <a class="shop-card" href="?product={category_slug}" target="_self" aria-label="View {safe(category["name"])} Black Loose Tea">
                         <div class="shop-image">
                             <div class="stock-tag">In stock</div>
-                            <div class="shop-pack">
-                                <small>Assam Tea Company</small>
-                                <strong>{safe(category["name"])}<br>Black Tea</strong>
-                            </div>
+                            {shop_pack}
                         </div>
                         <div class="shop-info">
-                            <div class="shop-weight">100 g to 1 kg</div>
+                            <div class="shop-weight">250 g to 1 kg</div>
                             <h3>{safe(category["name"])} Black Loose Tea</h3>
                             <div class="shop-rating"><span>&#9733;&#9733;&#9733;&#9733;&#9733;</span> Sample reviews</div>
                             <div class="shop-price">From {safe(category["prices"][products_page["size_labels"][0]])}</div>
                         </div>
-                    </div>
+                    </a>
                     """,
                     unsafe_allow_html=True,
                 )
-                if st.button(
-                    f"Select {category['name']}",
-                    key=f"view_{row_index}_{category_slug}",
-                    use_container_width=True,
-                ):
-                    st.session_state.selected_product_slug = category_slug
-                    st.session_state.selected_size = products_page["size_labels"][0]
-                    st.session_state.selected_qty = 1
-                    st.rerun()
 
-    special_cards = "".join(
-        f"""
-        <article class="simple-card">
-            <h3>{safe(product["name"])}</h3>
-            <span class="simple-price">{safe(product["price"])}</span>
-            <p>{safe(product["description"])}</p>
-        </article>
-        """
-        for product in products_page["special_products"]
-    )
-    sugar_cards = "".join(
-        f"""
-        <article class="simple-card">
-            <h3>{safe(product["name"])}</h3>
-            <span class="simple-price">{safe(product["price"])}</span>
-            <p>{safe(product["description"])}</p>
-        </article>
-        """
-        for product in products_page["sugar_products"]
-    )
-    bulk_cards = "".join(
-        f"""
-        <article class="simple-card">
-            <h3>{safe(product["name"])}</h3>
-            <span class="simple-price">{safe(product["price"])}</span>
-            <p>{safe(product["description"])}</p>
-        </article>
-        """
-        for product in products_page["bulk_products"]
-    )
     st.markdown(
         f"""
         <section class="section soft">
@@ -1153,22 +1236,97 @@ def render_products() -> None:
                 <div class="kicker">Special Products</div>
                 <h2>Tea add-ons and flavored tea</h2>
             </div>
-            <div class="simple-grid">{special_cards}</div>
         </section>
+        """,
+        unsafe_allow_html=True,
+    )
+    special_columns = st.columns(2)
+    special_product_images = {
+        "Masala Tea Mix": MASALA_TEA_IMAGE_PATH,
+        "Lamsa Tea": LAMSA_TEA_IMAGE_PATH,
+    }
+    for column, product in zip(special_columns, products_page["special_products"]):
+        product_image_src = local_image_src(
+            special_product_images.get(product["name"], "")
+        )
+        product_image_html = (
+            f'<div class="simple-product-image-wrap">'
+            f'<img class="simple-product-image" src="{product_image_src}" alt="{safe(product["name"])}">'
+            "</div>"
+            if product_image_src
+            else ""
+        )
+        with column:
+            st.markdown(
+                f"""
+                <article class="simple-card">
+                    {product_image_html}
+                    <h3>{safe(product["name"])}</h3>
+                    <span class="simple-price">{safe(product["price"])}</span>
+                    <p>{safe(product["description"])}</p>
+                </article>
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button(f"Add {product['name']} to bag", key=f"special_{slugify(product['name'])}", use_container_width=True):
+                add_direct_product_to_bag(product)
+
+    st.markdown(
+        """
         <section class="section cream">
             <div class="section-heading">
                 <div class="kicker">Sugar</div>
                 <h2>Sugar products</h2>
             </div>
-            <div class="simple-grid">{sugar_cards}</div>
         </section>
+        """,
+        unsafe_allow_html=True,
+    )
+    sugar_columns = st.columns(max(1, len(products_page["sugar_products"])))
+    for column, product in zip(sugar_columns, products_page["sugar_products"]):
+        with column:
+            st.markdown(
+                f"""
+                <article class="simple-card">
+                    <h3>{safe(product["name"])}</h3>
+                    <span class="simple-price">{safe(product["price"])}</span>
+                    <p>{safe(product["description"])}</p>
+                </article>
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button(f"Add {product['name']} to bag", key=f"sugar_{slugify(product['name'])}", use_container_width=True):
+                add_direct_product_to_bag(product)
+
+    st.markdown(
+        """
         <section class="section soft">
             <div class="section-heading">
                 <div class="kicker">Wholesale / Bulk Orders</div>
                 <h2>Whole bags for larger needs</h2>
             </div>
-            <div class="simple-grid">{bulk_cards}</div>
         </section>
+        """,
+        unsafe_allow_html=True,
+    )
+    bulk_columns = st.columns(2)
+    for column, product in zip(bulk_columns, products_page["bulk_products"]):
+        with column:
+            st.markdown(
+                f"""
+                <article class="simple-card">
+                    <h3>{safe(product["name"])}</h3>
+                    <span class="simple-price">{safe(product["price"])}</span>
+                    <p>{safe(product["description"])}</p>
+                </article>
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button(f"Add {product['name']} to bag", key=f"bulk_{slugify(product['name'])}", use_container_width=True):
+                add_direct_product_to_bag(product)
+
+    st.markdown(
+        f"""
         <section class="section cream">
                 <div class="order-panel">
                     <h2>Want to place an order?</h2>
@@ -1201,7 +1359,7 @@ def render_placeholder_page(page_name: str) -> None:
 
 def render_checkout() -> None:
     render_header("checkout")
-    bag_item = st.session_state.get("bag_item")
+    bag_items = st.session_state.get("bag_items", [])
     st.markdown(
         """
         <section class="page-hero">
@@ -1214,7 +1372,7 @@ def render_checkout() -> None:
         """,
         unsafe_allow_html=True,
     )
-    if not bag_item:
+    if not bag_items:
         st.markdown(
             """
             <section class="section cream">
@@ -1228,7 +1386,6 @@ def render_checkout() -> None:
         )
         if st.button("Go to Products", key="checkout_to_products"):
             st.session_state.current_page = "products"
-            st.session_state.nav_pills = "Products"
             st.rerun()
         render_footer()
         return
@@ -1236,20 +1393,24 @@ def render_checkout() -> None:
     st.markdown('<section class="section cream">', unsafe_allow_html=True)
     item_col, form_col = st.columns([1, 1], gap="large")
     with item_col:
-        st.markdown(
-            f"""
-            <div class="selected-summary">
-                <strong>{safe(bag_item["product"])} Black Loose Tea</strong><br>
-                Size: {safe(bag_item["size"])}<br>
-                Price: {safe(bag_item["price"])} each<br>
-                Quantity: {bag_item["quantity"]}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button("Edit product", key="edit_bag_item"):
+        st.markdown("### Bag items")
+        for index, item in enumerate(bag_items, start=1):
+            st.markdown(
+                f"""
+                <div class="selected-summary">
+                    <strong>{index}. {safe(item["product"])}</strong><br>
+                    Size: {safe(item["size"])}<br>
+                    Price: {safe(item["price"])} each<br>
+                    Quantity: {item["quantity"]}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        if st.button("Add more products", key="edit_bag_item"):
             st.session_state.current_page = "products"
-            st.session_state.nav_pills = "Products"
+            st.rerun()
+        if st.button("Clear bag", key="clear_bag"):
+            st.session_state.bag_items = []
             st.rerun()
     with form_col:
         st.text_input("Customer name", key="checkout_name")

@@ -55,7 +55,6 @@
     "loose_tea_heading": "Black Loose Tea",
     "loose_tea_intro": "Choose a tea category, then select the packet size that fits your need.",
     "size_labels": [
-      "100 g",
       "250 g",
       "500 g",
       "1 kg"
@@ -65,7 +64,6 @@
         "name": "Regular",
         "description": "A strong everyday tea for daily family use.",
         "prices": {
-          "100 g": "₹20",
           "250 g": "₹60",
           "500 g": "₹120",
           "1 kg": "₹240"
@@ -75,7 +73,6 @@
         "name": "Regular Plus",
         "description": "A fuller everyday option with a little more body in the cup.",
         "prices": {
-          "100 g": "₹25",
           "250 g": "₹65",
           "500 g": "₹130",
           "1 kg": "₹260"
@@ -85,7 +82,6 @@
         "name": "Premium",
         "description": "A richer tea choice for customers who enjoy stronger aroma and taste.",
         "prices": {
-          "100 g": "₹30",
           "250 g": "₹70",
           "500 g": "₹140",
           "1 kg": "₹280"
@@ -95,7 +91,6 @@
         "name": "Premium Plus",
         "description": "A stronger premium cup with deeper color and flavor.",
         "prices": {
-          "100 g": "₹35",
           "250 g": "₹75",
           "500 g": "₹150",
           "1 kg": "₹300"
@@ -105,7 +100,6 @@
         "name": "Super Premium",
         "description": "Our highest-quality black loose tea for a bold, memorable cup.",
         "prices": {
-          "100 g": "₹40",
           "250 g": "₹80",
           "500 g": "₹230",
           "1 kg": "₹360"
@@ -119,7 +113,7 @@
         "description": "A flavorful tea masala packet for adding spice and warmth to your tea."
       },
       {
-        "name": "Chocolate Tea",
+        "name": "Lamsa Tea",
         "price": "₹22",
         "description": "A sweet flavored tea option for customers who enjoy a chocolate-style tea taste."
       }
