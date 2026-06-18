@@ -850,6 +850,81 @@ st.markdown(
         color: #214D36;
         font-weight: 600;
     }}
+    .about-story {{
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: .95fr 1.05fr;
+        gap: clamp(2rem, 5vw, 4rem);
+        align-items: center;
+    }}
+    .about-visual {{
+        min-height: 510px;
+        display: grid;
+        place-items: center;
+    }}
+    .about-visual img {{
+        width: min(560px, 100%);
+        max-height: 500px;
+        object-fit: contain;
+        display: block;
+    }}
+    .about-copy h2 {{
+        color: #173A28;
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-size: clamp(2.5rem, 4vw, 3.5rem);
+        line-height: 1.08;
+        margin: 0 0 1rem;
+    }}
+    .about-copy p {{
+        color: #5D503F;
+        line-height: 1.8;
+        margin: 0 0 1rem;
+        font-size: 1.03rem;
+    }}
+    .about-values {{
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.1rem;
+    }}
+    .about-value {{
+        background: #FFFDF7;
+        border: 1px solid #E9DDBD;
+        padding: 1.45rem;
+    }}
+    .about-value h3 {{
+        color: #173A28;
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-size: 1.65rem;
+        margin: 0 0 .65rem;
+    }}
+    .about-value p {{
+        color: #665A49;
+        line-height: 1.65;
+        margin: 0;
+    }}
+    .about-promise {{
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.05fr .95fr;
+        gap: clamp(2rem, 5vw, 4rem);
+        align-items: center;
+    }}
+    .about-promise-list {{
+        display: grid;
+        gap: .9rem;
+        margin-top: 1.3rem;
+    }}
+    .about-promise-list div {{
+        background: #F7EDD7;
+        border-left: 4px solid #B58B3B;
+        padding: .95rem 1.1rem;
+        color: #42392E;
+        font-weight: 600;
+    }}
     .order-panel {{
         max-width: 900px;
         margin: 0 auto;
@@ -877,8 +952,9 @@ st.markdown(
         .brand-strip {{ padding: 1rem 1.3rem; }}
         .links {{ margin-top: 1rem; gap: 1rem; overflow-x: auto; padding-bottom: .35rem; }}
         .hero {{ min-height: 540px; }}
-        .cards, .feature, .product-grid, .quality-list, .simple-grid, .shop-grid, .product-detail {{ grid-template-columns: 1fr; }}
+        .cards, .feature, .product-grid, .quality-list, .simple-grid, .shop-grid, .product-detail, .about-story, .about-values, .about-promise {{ grid-template-columns: 1fr; }}
         .product-visual {{ min-height: 310px; }}
+        .about-visual {{ min-height: 320px; }}
         .commerce-row, .size-picker {{ grid-template-columns: 1fr; }}
         .simple-card {{ grid-template-columns: 1fr; }}
         .footer {{ display: block; }}
@@ -1340,15 +1416,68 @@ def render_products() -> None:
     render_footer()
 
 
-def render_placeholder_page(page_name: str) -> None:
-    render_header(current_page)
+def render_about() -> None:
+    render_header("about")
+    about_image = local_image_src(LOOSE_TEA_IMAGE_PATHS[PRODUCT_1KG_SIZE_LABEL])
+    logo_src = local_image_src(LOGO_IMAGE_PATH)
     st.markdown(
         f"""
         <section class="page-hero">
             <div class="page-hero-inner">
-                <div class="kicker">Coming Soon</div>
-                <h1>{safe(page_name)}</h1>
-                <p>This page is planned, but we have not designed it yet. For now, use Products to review the product flow.</p>
+                <div class="kicker">About Us</div>
+                <h1>Fresh Assam tea for everyday cups.</h1>
+                <p>Assam Tea Company brings strong, aromatic black loose tea and everyday tea products to families, shops, offices, and regular tea lovers.</p>
+            </div>
+        </section>
+        <section class="section cream">
+            <div class="about-story">
+                <div class="about-visual">
+                    <img src="{about_image}" alt="Assam Tea Company loose tea packet">
+                </div>
+                <div class="about-copy">
+                    <div class="kicker">Our Story</div>
+                    <h2>Built around the daily tea break.</h2>
+                    <p>We believe a good cup of tea should be strong, fresh, and dependable. Our products are selected and packed for customers who want rich color, full flavor, and a satisfying brew at home or work.</p>
+                    <p>From regular loose tea packets to premium choices, flavored tea, tea masala, and bulk options, our catalog is designed for practical everyday needs.</p>
+                </div>
+            </div>
+        </section>
+        <section class="section soft">
+            <div class="section-heading">
+                <div class="kicker">What We Care About</div>
+                <h2>Simple promises, carefully kept.</h2>
+                <p>Our focus is clear: freshness, strong taste, and reliable service for every customer.</p>
+            </div>
+            <div class="about-values">
+                <article class="about-value">
+                    <h3>Fresh Packing</h3>
+                    <p>Tea is packed with care so the aroma and flavor stay ready for each cup.</p>
+                </article>
+                <article class="about-value">
+                    <h3>Strong Flavor</h3>
+                    <p>Our black loose tea options are made for customers who enjoy a bold, satisfying brew.</p>
+                </article>
+                <article class="about-value">
+                    <h3>Everyday Value</h3>
+                    <p>Multiple packet sizes and price ranges make it easy to choose what fits your home or business.</p>
+                </article>
+            </div>
+        </section>
+        <section class="section cream">
+            <div class="about-promise">
+                <div class="about-copy">
+                    <div class="kicker">Our Products</div>
+                    <h2>Tea choices for every need.</h2>
+                    <p>Customers can choose from Regular, Regular Plus, Premium, Premium Plus, and Super Premium black loose tea, with packet sizes from 250 g to 1 kg.</p>
+                    <div class="about-promise-list">
+                        <div>Loose tea packets for families and daily tea drinkers</div>
+                        <div>Tea masala and flavored tea for variety</div>
+                        <div>Bulk tea and sugar options for larger orders</div>
+                    </div>
+                </div>
+                <div class="about-visual">
+                    <img src="{logo_src}" alt="{safe(data["company_name"])} logo">
+                </div>
             </div>
         </section>
         """,
@@ -1426,6 +1555,6 @@ if current_page == "products":
 elif current_page == "checkout":
     render_checkout()
 elif current_page == "about":
-    render_placeholder_page(page_titles[current_page])
+    render_about()
 else:
     render_home()
