@@ -7,29 +7,38 @@
     "About Us",
     "Checkout"
   ],
+  "business_info": {
+    "phone": "+91 98264 76551",
+    "whatsapp": "",
+    "email": "ishanpatel2233@gmail.com",
+    "address": "Subhash Chowk, Mohas, Katni, Madhya Pradesh",
+    "fssai_license": "",
+    "gst_number": ""
+  },
   "hero": {
     "headline": "Make Every Tea Break Richer with Strong, Fresh Assam Tea",
     "supporting_line": "Assam Quality. Strong Flavor. Fresh Packing.",
     "button_label": "Explore Now",
-    "image_path": "assets/hero-background.jpg"
+    "image_path": "assets/hero-background-web.jpg"
   },
   "testimonials": [
     {
-      "quote": "A bold, refreshing cup with an aroma that makes our morning tea special.",
-      "author": "Sample Customer",
-      "location": "Local Customer"
+      "quote": "A bold, refreshing cup with an aroma that makes morning tea special.",
+      "author": "",
+      "location": ""
     },
     {
       "quote": "The loose tea brews beautifully and tastes fresh every time.",
-      "author": "Sample Customer",
-      "location": "Local Customer"
+      "author": "",
+      "location": ""
     },
     {
-      "quote": "Strong flavor and excellent freshness. It has become our daily tea.",
-      "author": "Sample Customer",
-      "location": "Local Customer"
+      "quote": "Strong flavor and excellent freshness in every cup.",
+      "author": "",
+      "location": ""
     }
   ],
+  "testimonials_note": "Sample feedback shown above is illustrative only and not from named customers. Replace with real, attributed customer reviews before launch.",
   "benefits": [
     {
       "title": "Freshly Packed",
@@ -63,6 +72,7 @@
       {
         "name": "Regular",
         "description": "A strong everyday tea for daily family use.",
+        "in_stock": true,
         "prices": {
           "250 g": "₹60",
           "500 g": "₹120",
@@ -72,6 +82,7 @@
       {
         "name": "Regular Plus",
         "description": "A fuller everyday option with a little more body in the cup.",
+        "in_stock": true,
         "prices": {
           "250 g": "₹65",
           "500 g": "₹130",
@@ -81,6 +92,7 @@
       {
         "name": "Premium",
         "description": "A richer tea choice for customers who enjoy stronger aroma and taste.",
+        "in_stock": true,
         "prices": {
           "250 g": "₹70",
           "500 g": "₹140",
@@ -90,6 +102,7 @@
       {
         "name": "Premium Plus",
         "description": "A stronger premium cup with deeper color and flavor.",
+        "in_stock": true,
         "prices": {
           "250 g": "₹75",
           "500 g": "₹150",
@@ -99,6 +112,7 @@
       {
         "name": "Super Premium",
         "description": "Our highest-quality black loose tea for a bold, memorable cup.",
+        "in_stock": true,
         "prices": {
           "250 g": "₹80",
           "500 g": "₹230",
@@ -110,34 +124,61 @@
       {
         "name": "Masala Tea Mix",
         "price": "₹10",
+        "in_stock": true,
         "description": "A flavorful tea masala packet for adding spice and warmth to your tea."
       },
       {
         "name": "Lamsa Tea",
         "price": "₹22",
+        "in_stock": true,
         "description": "A sweet flavored tea option for customers who enjoy a chocolate-style tea taste."
       }
     ],
     "sugar_products": [
       {
         "name": "Sugar",
-        "price": "Price coming soon",
-        "description": "Sugar options will be added once the final prices are confirmed."
+        "price": "Contact for price",
+        "in_stock": true,
+        "description": "Sugar options are available on request. Contact us for current pricing and availability."
       }
     ],
     "bulk_products": [
       {
         "name": "Whole Bag of Tea",
         "price": "Contact for bulk price",
+        "in_stock": true,
         "description": "Bulk tea bags for regular customers, shops, offices, and larger needs."
       },
       {
         "name": "Whole Bag of Sugar",
         "price": "Contact for bulk price",
+        "in_stock": true,
         "description": "Bulk sugar bags with pricing and availability to be confirmed."
       }
     ],
     "order_note": "For ordering, availability, or bulk pricing, add a product to your bag and continue to checkout."
+  },
+  "legal_pages": {
+    "contact": {
+      "heading": "Contact Us",
+      "intro": "We are happy to help with orders, bulk pricing, and any questions about our tea.",
+      "body": "Phone: +91 98264 76551\nEmail: ishanpatel2233@gmail.com\nAddress: Subhash Chowk, Mohas, Katni, Madhya Pradesh\n\nBusiness hours: Monday-Saturday, 9:30 AM - 9:30 PM"
+    },
+    "privacy_policy": {
+      "heading": "Privacy Policy",
+      "intro": "How we handle the information you share with us.",
+      "body": "PLACEHOLDER PRIVACY POLICY - replace before launch.\n\nWe collect only the name, phone number, and order notes you submit at checkout, to contact you and prepare your order. We do not sell your information to third parties. Add full details here about data retention, cookies, and any analytics tools used on this site."
+    },
+    "terms": {
+      "heading": "Terms of Service",
+      "intro": "The terms that apply when you place an order with us.",
+      "body": "PLACEHOLDER TERMS - replace before launch.\n\nOrders submitted through this site are order requests, confirmed by phone before final pricing and delivery. Add your specific terms covering pricing changes, order cancellation, and liability here."
+    },
+    "refund_policy": {
+      "heading": "Refund & Shipping Policy",
+      "intro": "Our approach to delivery, returns, and refunds.",
+      "body": "PLACEHOLDER REFUND AND SHIPPING POLICY - replace before launch.\n\nDescribe delivery areas, delivery timelines, shipping charges, and your return/refund process for damaged or incorrect orders here."
+    }
   },
   "footer_text": "Fresh Assam tea for every tea break."
 }

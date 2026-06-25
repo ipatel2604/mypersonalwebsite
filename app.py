@@ -1,29 +1,56 @@
 import base64
 import html
 import json
+import re
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
+
+import backend
+import notifications
+import payments
+import sheets_sync
 
 
 BASE_DIR = Path(__file__).parent
 DATA_PATH = BASE_DIR / "data" / "business.json"
-LOGO_IMAGE_PATH = "assets/651fa53d-7fd1-4663-8600-aba5389a5bca.png"
+LOGO_IMAGE_PATH = "assets/651fa53d-7fd1-4663-8600-aba5389a5bca-web.png"
 PRODUCT_250G_SIZE_LABEL = "250 g"
 PRODUCT_500G_SIZE_LABEL = "500 g"
 PRODUCT_1KG_SIZE_LABEL = "1 kg"
 LOOSE_TEA_IMAGE_PATHS = {
-    PRODUCT_250G_SIZE_LABEL: "assets/6cc32f61-1971-49cd-9962-55ca04232192.png",
-    PRODUCT_500G_SIZE_LABEL: "assets/cd822b57-ac2f-40b7-ad87-d434f32afe0b.png",
-    PRODUCT_1KG_SIZE_LABEL: "assets/4e101546-ebb5-4381-8d29-f7a360030067.png",
+    PRODUCT_250G_SIZE_LABEL: "assets/6cc32f61-1971-49cd-9962-55ca04232192-web.jpg",
+    PRODUCT_500G_SIZE_LABEL: "assets/cd822b57-ac2f-40b7-ad87-d434f32afe0b-web.jpg",
+    PRODUCT_1KG_SIZE_LABEL: "assets/4e101546-ebb5-4381-8d29-f7a360030067-web.jpg",
 }
-LAMSA_TEA_IMAGE_PATH = "assets/bdc8f3c0-9962-4796-8b6a-ffc29437e487.png"
-MASALA_TEA_IMAGE_PATH = "assets/094c11e2-a39c-4b8e-949b-e66d416e0534.png"
+LAMSA_TEA_IMAGE_PATH = "assets/bdc8f3c0-9962-4796-8b6a-ffc29437e487-web.jpg"
+MASALA_TEA_IMAGE_PATH = "assets/094c11e2-a39c-4b8e-949b-e66d416e0534-web.jpg"
 
 
 def load_business_data() -> dict:
-    with DATA_PATH.open(encoding="utf-8") as data_file:
-        return json.load(data_file)
+    try:
+        with DATA_PATH.open(encoding="utf-8") as data_file:
+            return json.load(data_file)
+    except FileNotFoundError:
+        st.error(
+            "Site content file is missing (data/business.json). "
+            "Please restore it and reload the page."
+        )
+        st.stop()
+    except json.JSONDecodeError as error:
+        st.error(
+            f"Site content file (data/business.json) is not valid JSON: {error}. "
+            "Please fix the file and reload the page."
+        )
+        st.stop()
+
+
+def parse_price(price_text: str) -> float | None:
+    match = re.search(r"[\d,]+(?:\.\d+)?", price_text)
+    if not match:
+        return None
+    return float(match.group(0).replace(",", ""))
 
 
 def local_background_css(image_path: str) -> str:
@@ -111,20 +138,29 @@ PAGE_SLUGS = {
     "About Us": "about",
     "Checkout": "checkout",
 }
+LEGAL_PAGE_SLUGS = {"contact", "privacy_policy", "terms", "refund_policy"}
+ALL_PAGE_SLUGS = set(PAGE_SLUGS.values()) | LEGAL_PAGE_SLUGS
 if "current_page" not in st.session_state:
     st.session_state.current_page = "home"
 current_page = st.session_state.current_page
-if current_page not in PAGE_SLUGS.values():
+if current_page not in ALL_PAGE_SLUGS:
     current_page = "home"
     st.session_state.current_page = "home"
 if query_value("product"):
     current_page = "products"
     st.session_state.current_page = "products"
+if query_value("page") in LEGAL_PAGE_SLUGS:
+    current_page = query_value("page")
+    st.session_state.current_page = current_page
 page_titles = {
     "home": "Home",
     "products": "Products",
     "about": "About Us",
     "checkout": "Checkout",
+    "contact": "Contact Us",
+    "privacy_policy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "refund_policy": "Refund & Shipping Policy",
 }
 
 st.set_page_config(
@@ -277,6 +313,7 @@ st.markdown(
     .hero-line {{
         color: #4A4032; font-size: clamp(1rem, 1.4vw, 1.14rem);
         letter-spacing: .04em; margin-bottom: 2.25rem;
+        text-shadow: 0 0 14px rgba(250,245,234,.95), 0 0 4px rgba(250,245,234,.95);
     }}
     .cta {{
         display: inline-block; background: #214D36; color: #FAF5EA !important;
@@ -312,7 +349,6 @@ st.markdown(
     .stars {{ color: #B58B3B; letter-spacing: .18rem; font-size: .84rem; }}
     .review .quote {{ color: #453C30; line-height: 1.67; margin: 1rem 0 1.2rem; }}
     .review .person {{ font-weight: 600; color: #214D36; font-size: .93rem; }}
-    .review .sample {{ color: #847762; font-size: .8rem; margin-left: .35rem; }}
     .benefit {{
         text-align: center; padding: 1.7rem 1.35rem;
     }}
@@ -455,7 +491,16 @@ st.markdown(
     .shop-price {{
         font-size: clamp(2rem, 4vw, 2.7rem);
         font-weight: 400;
-        margin-bottom: 1.65rem;
+        margin-bottom: .9rem;
+    }}
+    .shop-action {{
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #214D36;
+        font-weight: 800;
+        border-bottom: 2px solid #B58B3B;
+        padding-bottom: .2rem;
     }}
     .product-select-note {{
         text-align: center;
@@ -952,6 +997,7 @@ st.markdown(
         .brand-strip {{ padding: 1rem 1.3rem; }}
         .links {{ margin-top: 1rem; gap: 1rem; overflow-x: auto; padding-bottom: .35rem; }}
         .hero {{ min-height: 540px; }}
+        .hero-content {{ max-width: 78%; }}
         .cards, .feature, .product-grid, .quality-list, .simple-grid, .shop-grid, .product-detail, .about-story, .about-values, .about-promise {{ grid-template-columns: 1fr; }}
         .product-visual {{ min-height: 310px; }}
         .about-visual {{ min-height: 320px; }}
@@ -989,7 +1035,8 @@ def render_header(active_page: str) -> None:
             unsafe_allow_html=True,
         )
     active_label = next(
-        item for item in data["navigation"] if PAGE_SLUGS[item] == active_page
+        (item for item in data["navigation"] if PAGE_SLUGS[item] == active_page),
+        data["navigation"][0],
     )
     with nav_col:
         chosen = st.pills(
@@ -1000,12 +1047,49 @@ def render_header(active_page: str) -> None:
             key=f"nav_pills_{active_page}",
             width="stretch",
         )
-    chosen_page = PAGE_SLUGS[chosen]
-    if chosen_page != st.session_state.current_page:
-        if query_value("product"):
+    if chosen != active_label:
+        chosen_page = PAGE_SLUGS[chosen]
+        if query_value("product") or query_value("page"):
             st.query_params.clear()
         st.session_state.current_page = chosen_page
         st.rerun()
+
+
+def inject_seo_meta(description: str) -> None:
+    """Best-effort meta description / Open Graph tags for link previews.
+
+    Streamlit doesn't expose the document <head>, so this reaches into the
+    parent document from a hidden component iframe. It helps social-link
+    previews and some crawlers, but it is not a substitute for static,
+    server-rendered HTML - see README for the real SEO limitation.
+    """
+    safe_description = json.dumps(description)
+    safe_title = json.dumps(f"{data['company_name']} | {description[:50]}")
+    components.html(
+        f"""
+        <script>
+        (function() {{
+            const doc = window.parent.document;
+            const setMeta = (name, content, attr) => {{
+                let tag = doc.querySelector(`meta[${{attr}}="${{name}}"]`);
+                if (!tag) {{
+                    tag = doc.createElement("meta");
+                    tag.setAttribute(attr, name);
+                    doc.head.appendChild(tag);
+                }}
+                tag.setAttribute("content", content);
+            }};
+            const description = {safe_description};
+            setMeta("description", description, "name");
+            setMeta("og:description", description, "property");
+            setMeta("og:title", {safe_title}, "property");
+            setMeta("og:type", "website", "property");
+        }})();
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
 
 
 def render_announcement() -> None:
@@ -1026,22 +1110,63 @@ def render_footer() -> None:
     footer_links = "&nbsp;&nbsp; | &nbsp;&nbsp;".join(
         safe(item) for item in data["navigation"] if item != "Home"
     )
+    legal_links = "&nbsp;&nbsp; | &nbsp;&nbsp;".join(
+        f'<a href="?page={slug}" target="_self">{safe(page_titles[slug])}</a>'
+        for slug in ["contact", "privacy_policy", "terms", "refund_policy"]
+    )
+    business_info = data.get("business_info", {})
+    brand_parts = [
+        f'<strong>{safe(data["company_name"])}</strong>',
+        f"<p>{safe(data['footer_text'])}</p>",
+    ]
+    if business_info.get("phone") and "REPLACE" not in business_info["phone"]:
+        brand_parts.append(f'<p>Call/WhatsApp: {safe(business_info["phone"])}</p>')
+    brand_html = "".join(brand_parts)
     st.markdown(
         f"""
-        <footer class="footer">
+        <div class="footer">
             <div>
-                <strong>{safe(data["company_name"])}</strong>
-                <p>{safe(data["footer_text"])}</p>
+                {brand_html}
             </div>
-            <div class="footer-links">{footer_links}</div>
-        </footer>
+            <div class="footer-links">
+                {footer_links}<br>
+                <span style="font-size:.82rem;">{legal_links}</span>
+            </div>
+        </div>
         """,
         unsafe_allow_html=True,
     )
 
 
+def render_legal_page(slug: str) -> None:
+    render_header(slug)
+    content = data["legal_pages"][slug]
+    inject_seo_meta(content["intro"])
+    body_html = "".join(
+        f"<p>{safe(line)}</p>" for line in content["body"].split("\n") if line.strip()
+    )
+    st.markdown(
+        f"""
+        <section class="page-hero">
+            <div class="page-hero-inner">
+                <h1>{safe(content["heading"])}</h1>
+                <p>{safe(content["intro"])}</p>
+            </div>
+        </section>
+        <section class="section cream">
+            <div class="about-copy" style="max-width:820px;margin:0 auto;">
+                {body_html}
+            </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+    render_footer()
+
+
 def render_home() -> None:
     render_header("home")
+    inject_seo_meta(hero["supporting_line"])
     st.markdown(
         f"""
         <section class="hero">
@@ -1062,25 +1187,27 @@ def render_home() -> None:
         <article class="review">
             <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
             <p class="quote">"{safe(review['quote'])}"</p>
-            <span class="person">{safe(review['author'])}</span>
-            <span class="sample">(sample feedback)</span>
+            {f'<span class="person">{safe(review["author"])}</span>' if review.get("author") else ""}
         </article>
         """
         for review in data["testimonials"]
     )
+    testimonials_note = data.get("testimonials_note", "")
     st.markdown(
         f"""
         <section class="section cream">
             <div class="section-heading">
                 <div class="kicker">Customer Feedback</div>
                 <h2>Tea moments our customers enjoy</h2>
-                <p>Temporary sample reviews for layout preview. We will replace these with genuine customer words before launch.</p>
+                <p>Everyday tea drinkers look for freshness, aroma, and a strong cup they can count on.</p>
             </div>
             <div class="cards">{reviews}</div>
         </section>
         """,
         unsafe_allow_html=True,
     )
+    if testimonials_note:
+        st.caption(testimonials_note)
 
     icons = ["&#10022;", "&#9832;", "&#10003;"]
     benefits = "".join(
@@ -1152,6 +1279,7 @@ def render_products() -> None:
     st.session_state.selected_qty = max(1, min(int(st.session_state.selected_qty), 99))
 
     render_header("products")
+    inject_seo_meta(products_page["intro"])
     st.markdown(
         f"""
         <section class="page-hero">
@@ -1208,7 +1336,7 @@ def render_products() -> None:
                     <p class="product-desc">{safe(category["description"])}</p>
                     <div class="review-line">
                         <span class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-                        <span>Sample customer reviews</span>
+                        <span>Freshness and strong flavor customers can trust</span>
                     </div>
                 </div>
                 """,
@@ -1235,13 +1363,21 @@ def render_products() -> None:
                 """,
                 unsafe_allow_html=True,
             )
-            if st.button("Add to bag", key="add_to_bag", use_container_width=True):
+            if not category.get("in_stock", True):
+                st.warning("This tea is currently out of stock.")
+            if st.button(
+                "Add to bag",
+                key="add_to_bag",
+                use_container_width=True,
+                disabled=not category.get("in_stock", True),
+            ):
                 add_item_to_bag({
                     "product": category["name"],
                     "size": size,
                     "price": category["prices"][size],
                     "quantity": st.session_state.selected_qty,
                 })
+                st.query_params.clear()
                 st.session_state.current_page = "checkout"
                 st.rerun()
 
@@ -1256,6 +1392,7 @@ def render_products() -> None:
             "price": product["price"],
             "quantity": quantity,
         })
+        st.query_params.clear()
         st.session_state.current_page = "checkout"
         st.rerun()
 
@@ -1287,18 +1424,20 @@ def render_products() -> None:
                 products_page["size_labels"][0],
             )
             with column:
+                stock_label = "In stock" if category.get("in_stock", True) else "Out of stock"
                 st.markdown(
                     f"""
                     <a class="shop-card" href="?product={category_slug}" target="_self" aria-label="View {safe(category["name"])} Black Loose Tea">
                         <div class="shop-image">
-                            <div class="stock-tag">In stock</div>
+                            <div class="stock-tag">{stock_label}</div>
                             {shop_pack}
                         </div>
                         <div class="shop-info">
                             <div class="shop-weight">250 g to 1 kg</div>
                             <h3>{safe(category["name"])} Black Loose Tea</h3>
-                            <div class="shop-rating"><span>&#9733;&#9733;&#9733;&#9733;&#9733;</span> Sample reviews</div>
+                            <div class="shop-rating"><span>&#9733;&#9733;&#9733;&#9733;&#9733;</span> Strong everyday flavor</div>
                             <div class="shop-price">From {safe(category["prices"][products_page["size_labels"][0]])}</div>
+                            <div class="shop-action">View options</div>
                         </div>
                     </a>
                     """,
@@ -1333,6 +1472,7 @@ def render_products() -> None:
             else ""
         )
         with column:
+            in_stock = product.get("in_stock", True)
             st.markdown(
                 f"""
                 <article class="simple-card">
@@ -1340,11 +1480,17 @@ def render_products() -> None:
                     <h3>{safe(product["name"])}</h3>
                     <span class="simple-price">{safe(product["price"])}</span>
                     <p>{safe(product["description"])}</p>
+                    {'' if in_stock else '<p style="color:#B3261E;font-weight:700;">Out of stock</p>'}
                 </article>
                 """,
                 unsafe_allow_html=True,
             )
-            if st.button(f"Add {product['name']} to bag", key=f"special_{slugify(product['name'])}", use_container_width=True):
+            if st.button(
+                f"Add {product['name']} to bag",
+                key=f"special_{slugify(product['name'])}",
+                use_container_width=True,
+                disabled=not in_stock,
+            ):
                 add_direct_product_to_bag(product)
 
     st.markdown(
@@ -1361,17 +1507,24 @@ def render_products() -> None:
     sugar_columns = st.columns(max(1, len(products_page["sugar_products"])))
     for column, product in zip(sugar_columns, products_page["sugar_products"]):
         with column:
+            in_stock = product.get("in_stock", True)
             st.markdown(
                 f"""
                 <article class="simple-card">
                     <h3>{safe(product["name"])}</h3>
                     <span class="simple-price">{safe(product["price"])}</span>
                     <p>{safe(product["description"])}</p>
+                    {'' if in_stock else '<p style="color:#B3261E;font-weight:700;">Out of stock</p>'}
                 </article>
                 """,
                 unsafe_allow_html=True,
             )
-            if st.button(f"Add {product['name']} to bag", key=f"sugar_{slugify(product['name'])}", use_container_width=True):
+            if st.button(
+                f"Add {product['name']} to bag",
+                key=f"sugar_{slugify(product['name'])}",
+                use_container_width=True,
+                disabled=not in_stock,
+            ):
                 add_direct_product_to_bag(product)
 
     st.markdown(
@@ -1388,17 +1541,24 @@ def render_products() -> None:
     bulk_columns = st.columns(2)
     for column, product in zip(bulk_columns, products_page["bulk_products"]):
         with column:
+            in_stock = product.get("in_stock", True)
             st.markdown(
                 f"""
                 <article class="simple-card">
                     <h3>{safe(product["name"])}</h3>
                     <span class="simple-price">{safe(product["price"])}</span>
                     <p>{safe(product["description"])}</p>
+                    {'' if in_stock else '<p style="color:#B3261E;font-weight:700;">Out of stock</p>'}
                 </article>
                 """,
                 unsafe_allow_html=True,
             )
-            if st.button(f"Add {product['name']} to bag", key=f"bulk_{slugify(product['name'])}", use_container_width=True):
+            if st.button(
+                f"Add {product['name']} to bag",
+                key=f"bulk_{slugify(product['name'])}",
+                use_container_width=True,
+                disabled=not in_stock,
+            ):
                 add_direct_product_to_bag(product)
 
     st.markdown(
@@ -1418,6 +1578,10 @@ def render_products() -> None:
 
 def render_about() -> None:
     render_header("about")
+    inject_seo_meta(
+        "Assam Tea Company brings strong, aromatic black loose tea and "
+        "everyday tea products to families, shops, offices, and tea lovers."
+    )
     about_image = local_image_src(LOOSE_TEA_IMAGE_PATHS[PRODUCT_1KG_SIZE_LABEL])
     logo_src = local_image_src(LOGO_IMAGE_PATH)
     st.markdown(
@@ -1489,6 +1653,7 @@ def render_about() -> None:
 def render_checkout() -> None:
     render_header("checkout")
     bag_items = st.session_state.get("bag_items", [])
+    order_submitted = st.session_state.get("order_submitted", False)
     st.markdown(
         """
         <section class="page-hero">
@@ -1501,6 +1666,42 @@ def render_checkout() -> None:
         """,
         unsafe_allow_html=True,
     )
+    if order_submitted:
+        last_order_id = st.session_state.get("last_order_id")
+        payment_link = st.session_state.get("last_payment_link")
+        panel_parts = []
+        if last_order_id is not None:
+            panel_parts.append(f"<p><strong>Order reference: #{last_order_id}</strong></p>")
+        panel_parts.append(
+            "<p>We have received your details and saved your order. We will "
+            "contact you by phone to confirm availability, pricing, and "
+            "delivery or pickup details.</p>"
+        )
+        if payment_link:
+            panel_parts.append(
+                f'<p><a class="cta" href="{safe(payment_link)}" target="_blank">Pay online now</a></p>'
+            )
+        panel_body = "".join(panel_parts)
+        st.markdown(
+            f"""
+            <section class="section cream">
+                <div class="order-panel">
+                    <h2>Thank you for your order request.</h2>
+                    {panel_body}
+                </div>
+            </section>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("Place another order", key="place_another_order"):
+            st.session_state.order_submitted = False
+            st.session_state.last_order_id = None
+            st.session_state.last_payment_link = None
+            st.session_state.current_page = "products"
+            st.rerun()
+        render_footer()
+        return
+
     if not bag_items:
         st.markdown(
             """
@@ -1519,22 +1720,48 @@ def render_checkout() -> None:
         render_footer()
         return
 
+    numeric_total = 0.0
+    has_quote_only_item = False
+    for item in bag_items:
+        unit_price = parse_price(item["price"])
+        if unit_price is None:
+            has_quote_only_item = True
+        else:
+            numeric_total += unit_price * item["quantity"]
+
     st.markdown('<section class="section cream">', unsafe_allow_html=True)
     item_col, form_col = st.columns([1, 1], gap="large")
     with item_col:
         st.markdown("### Bag items")
         for index, item in enumerate(bag_items, start=1):
+            unit_price = parse_price(item["price"])
+            line_total = (
+                f"₹{unit_price * item['quantity']:,.0f}"
+                if unit_price is not None
+                else "To be confirmed"
+            )
             st.markdown(
                 f"""
                 <div class="selected-summary">
                     <strong>{index}. {safe(item["product"])}</strong><br>
                     Size: {safe(item["size"])}<br>
-                    Price: {safe(item["price"])} each<br>
-                    Quantity: {item["quantity"]}
+                    Price: {safe(item["price"])} each &times; {item["quantity"]}<br>
+                    Line total: {line_total}
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
+        total_note = (
+            " (plus items priced on request)" if has_quote_only_item else ""
+        )
+        st.markdown(
+            f"""
+            <div class="selected-summary" style="font-size:1.1rem;">
+                <strong>Order total: ₹{numeric_total:,.0f}{total_note}</strong>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         if st.button("Add more products", key="edit_bag_item"):
             st.session_state.current_page = "products"
             st.rerun()
@@ -1544,8 +1771,57 @@ def render_checkout() -> None:
     with form_col:
         st.text_input("Customer name", key="checkout_name")
         st.text_input("Phone number", key="checkout_phone")
+        st.text_input("Email (optional, for order confirmation)", key="checkout_email")
         st.text_area("Order notes", key="checkout_notes")
-        st.button("Submit order request", key="submit_order_request", use_container_width=True)
+        if not payments.is_configured():
+            st.caption(
+                "Online payment is not connected yet. Orders are confirmed manually by phone."
+            )
+        if st.button("Submit order request", key="submit_order_request", use_container_width=True):
+            name = st.session_state.checkout_name.strip()
+            phone = st.session_state.checkout_phone.strip()
+            email = st.session_state.checkout_email.strip()
+            if not name or not phone:
+                st.error("Please enter your name and phone number before submitting.")
+            elif not re.fullmatch(r"[0-9+\-\s()]{7,20}", phone):
+                st.error("Please enter a valid phone number.")
+            elif email and not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+                st.error("Please enter a valid email address, or leave it blank.")
+            else:
+                order_id = backend.save_order(
+                    customer_name=name,
+                    customer_phone=phone,
+                    notes=st.session_state.checkout_notes.strip(),
+                    items=bag_items,
+                    total_amount=numeric_total,
+                )
+                payment_link = payments.create_payment_link(
+                    order_id=order_id,
+                    amount_rupees=numeric_total,
+                    customer_name=name,
+                    customer_phone=phone,
+                )
+                if email:
+                    notifications.send_order_confirmation(
+                        customer_email=email,
+                        company_name=data["company_name"],
+                        order_id=order_id,
+                        items=bag_items,
+                        total_amount=numeric_total,
+                    )
+                sheets_sync.append_order(
+                    order_id=order_id,
+                    customer_name=name,
+                    customer_phone=phone,
+                    items=bag_items,
+                    total_amount=numeric_total,
+                    notes=st.session_state.checkout_notes.strip(),
+                )
+                st.session_state.last_order_id = order_id
+                st.session_state.last_payment_link = payment_link
+                st.session_state.order_submitted = True
+                st.session_state.bag_items = []
+                st.rerun()
     st.markdown("</section>", unsafe_allow_html=True)
     render_footer()
 
@@ -1556,5 +1832,7 @@ elif current_page == "checkout":
     render_checkout()
 elif current_page == "about":
     render_about()
+elif current_page in LEGAL_PAGE_SLUGS:
+    render_legal_page(current_page)
 else:
     render_home()
